@@ -1,0 +1,67 @@
+//Find Employees Earning More Than Their Department’s Average Salary
+SELECT e.emp_id, e.emp_name, e.salary, e.dept_id
+FROM employees e
+JOIN (
+    SELECT dept_id, AVG(salary) AS avg_salary
+    FROM employees
+    GROUP BY dept_id
+) dept_avg ON e.dept_id = dept_avg.dept_id
+WHERE e.salary > dept_avg.avg_salary;
+
+// Find Employees Who Worked on All Projects in Their Department
+-- Step-by-step breakdown using NOT EXISTS
+SELECT e.emp_id, e.emp_name
+FROM employees e
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM projects p1
+    JOIN employees e2 ON p1.emp_id = e2.emp_id
+    WHERE e2.dept_id = e.dept_id
+    AND NOT EXISTS (
+        SELECT 1
+        FROM projects p2
+        WHERE p2.emp_id = e.emp_id
+        AND p2.project_id = p1.project_id
+    )
+);
+
+// Find the Highest-Paid Employee in Each Department Who Started After 2020
+SELECT e.emp_id, e.emp_name, e.dept_id, e.salary
+FROM employees e
+JOIN (
+    SELECT dept_id, MAX(salary) AS max_salary
+    FROM employees
+    WHERE hire_date > '2020-12-31'
+    GROUP BY dept_id
+) max_salaries
+ON e.dept_id = max_salaries.dept_id AND e.salary = max_salaries.max_salary
+WHERE e.hire_date > '2020-12-31';
+
+// Find Departments Where All Employees Earn Above a Certain Threshold (e.g., ₹55,000)
+SELECT d.dept_id, d.dept_name
+FROM departments d
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM employees e
+    WHERE e.dept_id = d.dept_id AND e.salary <= 55000
+);
+
+//Find Orders Containing Products from All Categories
+SELECT od.order_id
+FROM order_details od
+JOIN products p ON od.product_id = p.product_id
+GROUP BY od.order_id
+HAVING COUNT(DISTINCT p.category) = (
+    SELECT COUNT(DISTINCT category) FROM products
+);
+
+// Find Regions Where No Customer Ordered a Specific Product (e.g., product_id = 202)
+SELECT DISTINCT c.region
+FROM customers c
+WHERE c.customer_id NOT IN (
+    SELECT o.customer_id
+    FROM orders o
+    JOIN order_details od ON o.order_id = od.order_id
+    WHERE od.product_id = 202
+);
+
