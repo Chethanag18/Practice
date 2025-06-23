@@ -1,0 +1,83 @@
+SELECT w1.Id
+FROM Weather w1
+JOIN Weather w2 ON DATEDIFF(w1.RecordDate, w2.RecordDate) = 1
+WHERE w1.Temperature > w2.Temperature;
+------------------------------------------------------------------------------------------------------------------
+SELECT player_id, MIN(event_date) AS first_login
+FROM Activity
+GROUP BY player_id;
+-------------------------------------------------------------------------------------------------------------------
+SELECT MAX(Salary) AS SecondHighestSalary
+FROM Employee
+WHERE Salary < (SELECT MAX(Salary) FROM Employee);
+--------------------------------------------------------------------------------------------------------------------
+SELECT name
+FROM Users u
+JOIN (SELECT user_id, COUNT(*) AS rating_count FROM MovieRating GROUP BY user_id ORDER BY rating_count DESC, user_id ASC LIMIT 1) r
+ON u.user_id = r.user_id;
+-----------------------------------------------------------------------------------------------------------------------
+SELECT title
+FROM Movies m
+JOIN (SELECT movie_id, AVG(rating) AS avg_rating FROM MovieRating WHERE created_at BETWEEN '2020-02-01' AND '2020-02-29' GROUP BY movie_id ORDER BY avg_rating DESC, movie_id ASC LIMIT 1) t
+ON m.movie_id = t.movie_id;
+---------------------------------------------------------------------------------------------------------------------------
+SELECT e.name
+FROM Employee e
+JOIN Employee m ON e.managerId = m.id
+WHERE e.salary > m.salary;
+---------------------------------------------------------------------------------------------------------------
+DELETE e1 FROM Person e1
+JOIN Person e2
+ON e1.email = e2.email AND e1.id > e2.id;
+----------------------------------------------------------------------------------------------------------------
+SELECT id, visit_date, people
+FROM (
+  SELECT id, visit_date, people,
+         LEAD(people, 1) OVER (ORDER BY visit_date) AS p1,
+         LAG(people, 1) OVER (ORDER BY visit_date) AS p2
+  FROM Stadium
+) s
+WHERE (people >= 100 AND p1 >= 100 AND p2 >= 100)
+   OR (people >= 100 AND p1 >= 100)
+   OR (people >= 100 AND p2 >= 100);
+-----------------------------------------------------------------------------------------------------------------
+SELECT customer_id
+FROM Customer
+GROUP BY customer_id
+HAVING COUNT(DISTINCT product_key) = (SELECT COUNT(*) FROM Product);
+------------------------------------------------------------------------------------------------------------------
+SELECT c.customer_id, c.customer_name, SUM(o.total_amount) AS total_spent
+FROM Customers c
+JOIN Orders o ON c.customer_id = o.customer_id
+GROUP BY c.customer_id, c.customer_name
+ORDER BY total_spent DESC
+LIMIT 5;
+-------------------------------------------------------------------------------------------------------------------
+SELECT e.employee_id, e.employee_name, COUNT(o.order_id) AS orders_counts
+FROM Employees e
+JOIN Orders o ON e.employee_id = o.employee_id
+GROUP BY e.employee_id, e.employee_name
+ORDER BY orders_counts DESC;
+--------------------------------------------------------------------------------------------------------------------
+SELECT c.category_name, p.product_name, SUM(od.quantity * od.unit_price) AS revenue
+FROM OrderDetails od
+JOIN Products p ON od.product_id = p.product_id
+JOIN Categories c ON p.category_id = c.category_id
+GROUP BY c.category_name, p.product_id, p.product_name
+HAVING SUM(od.quantity * od.unit_price) = (
+    SELECT MAX(total_revenue)
+    FROM (
+        SELECT p2.category_id, p2.product_id, SUM(od2.quantity * od2.unit_price) AS total_revenue
+        FROM OrderDetails od2
+        JOIN Products p2 ON od2.product_id = p2.product_id
+        GROUP BY p2.category_id, p2.product_id
+        HAVING p2.category_id = c.category_id
+    ) sub
+)
+------------------------------------------------------------------------------------------------------
+SELECT s.shipper_id, s.shipper_name, AVG(DATEDIFF(o.shipped_date, o.order_date)) AS avg_delivery_days
+FROM Orders o
+JOIN Shippers s ON o.shipper_id = s.shipper_id
+WHERE o.shipped_date IS NOT NULL AND o.order_date IS NOT NULL
+GROUP BY s.shipper_id, s.shipper_name;
+---------------------------------------------------------------------------------------------------------
