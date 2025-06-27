@@ -1,0 +1,75 @@
+#Select Query
+SELECT title from Movies;
+Select director from Movies;
+Select title,director from Movies;
+Select title,Year from Movies;
+Select * from Movies;
+
+Queries with constraints (Pt. 1)
+select * from movies where id = 6;
+select * from movies where year between 2000 and 2010;
+Select * from movies where year not between 2000 and 2010;
+select title,year from movies limit 5;
+
+ Queries with constraints (Pt. 2)
+SELECT * from movies where title like "%Toy Story%";
+select * from movies where director = "John Lasseter";
+select * from movies where director not like "%John Lasseter%";
+select * from movies where title like "Wall%"
+
+Filtering and sorting Query results
+select distinct director from movies order by director asc;
+select * from movies order by year desc limit 4;
+select * from movies order by title asc limit 5;
+select * from movies order by title asc limit 5 offset 5;
+
+Simple SELECT Queries
+SELECT city,population from North_american_cities where country = "Canada";
+SELECT city, latitude FROM north_american_cities WHERE country = "United States" ORDER BY latitude DESC;
+SELECT city, longitude FROM north_american_cities WHERE longitude < -87.629798 ORDER BY longitude ASC;
+SELECT city, population FROM north_american_cities WHERE country LIKE "Mexico" ORDER BY population DESC LIMIT 2;
+select city,population from North_american_cities where country="United States" order by population desc limit 2 offset 2;
+
+select movies.title, boxoffice.domestic_sales,boxoffice.international_sales from boxoffice join movies on boxoffice.movie_id = movies.id;
+select movies.title ,boxoffice.domestic_sales,boxoffice.international_sales 
+from movies join boxoffice on movies.id = boxoffice.movie_id where boxoffice.international_sales > boxoffice.domestic_sales;
+select movies.title ,boxoffice.rating from movies join boxoffice on movies.id = boxoffice.movie_id order by boxoffice.rating desc;
+
+OUTER JOINs
+SELECT distinct building from employees;
+select * from buildings;
+SELECT DISTINCT building_name, role FROM buildings LEFT JOIN employeesON building_name = building;
+
+A short note on NULLs
+select name,role from employees where building is Null;
+SELECT DISTINCT building_name FROM buildings LEFT JOIN employees ON building_name = building WHERE role IS NULL;
+select movies.title,boxoffice.rating * 10 as rating_in_percent 
+from movies join boxoffice on movies.id = boxoffice.movie_id;
+select title from movies where year%2 == 0;
+
+
+select name,max(years_employed) from employees;
+select role,avg(years_employed) from employees 
+group by role;
+select building,sum(years_employed) from employees 
+group by building;
+
+select count() from employees where role="Artist";
+select role ,count() from employees 
+group by role ;
+select sum(years_employed) from employees where role = "Engineer";
+
+SELECT count(),director from movies
+group by director;
+select sum(boxoffice.domestic_sales + boxoffice.international_sales),movies.director from boxoffice join movies on boxoffice.movie_id  = movies.id 
+group by movies.director;
+
+delete from movies 
+where director = "Andrew Stanton";
+alter table movies 
+add column aspect_ratio float;
+alter table movies 
+add column language text default "English";
+
+drop table movies;
+drop table boxoffice;
